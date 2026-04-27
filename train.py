@@ -153,12 +153,25 @@ def train_one_epoch(model, criterion, optimizer, data_loader, device, epoch, pri
             # --- INJECTED DIAGNOSTICS HERE ---
             scaler.unscale_(optimizer) # Unscale to get raw gradient values
             
+            
+            
+            
             if model.head.weight.grad is not None:
                 grad_max = model.head.weight.grad.abs().max().item()
                 grad_mean = model.head.weight.grad.abs().mean().item()
                 print(f"  --> [Diag] Grad Max: {grad_max:.6f} | Mean: {grad_mean:.6f}")
             else:
                 print("  --> [Diag] GRADIENT IS NONE!")
+            # -------------------------------
+            
+            
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+            
+                        # --- INJECT DIAGNOSTICS HERE ---
+            if model.head.weight.grad is not None:
+                grad_max = model.head.weight.grad.abs().max().item()
+                grad_mean = model.head.weight.grad.abs().mean().item()
+                print(f"  --> [Diag] Grad Max: {grad_max:.6f} | Mean: {grad_mean:.6f}")
             # -------------------------------
             
             scaler.step(optimizer)
@@ -173,6 +186,14 @@ def train_one_epoch(model, criterion, optimizer, data_loader, device, epoch, pri
                 print(f"  --> [Diag] Grad Max: {grad_max:.6f} | Mean: {grad_mean:.6f}")
             # -------------------------------
 
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+            
+                        # --- INJECT DIAGNOSTICS HERE ---
+            if model.head.weight.grad is not None:
+                grad_max = model.head.weight.grad.abs().max().item()
+                grad_mean = model.head.weight.grad.abs().mean().item()
+                print(f"  --> [Diag] Grad Max: {grad_max:.6f} | Mean: {grad_mean:.6f}")
+            # -------------------------------
             
             optimizer.step()
 
@@ -447,3 +468,6 @@ if __name__ == "__main__":
 # The new command for training the model with Adam's optimizer and a learning rate of 0.001 will be added to the notebook on Kaggle.
 # Printing the gradients was added to the training loop
 # added weights_only=False
+
+
+#changes made for E3: clipping gradients and printing gradient statistics before and after clipping to diagnose potential issues with exploding gradients. This can help identify if the gradients are becoming too large during training, which can lead to instability and poor convergence. By monitoring the maximum and mean absolute values of the gradients, we can gain insights into the training dynamics and make informed decisions about adjusting the learning rate or other hyperparameters to improve training stability.
